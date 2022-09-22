@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="/Users/rocke/Documents/TSU/web/web_lab_7/lab7css.css">
+    <title>Document</title>
+</head>
+<body>
+    <main>
+        <input id="inputField" name="inputField" type="number" value="1" onkeypress="return event.charCode >= 48" min="1" max="10">
+        <button id="squareButton">Квадрат</button>
+        <button id="triangleButton">Треугольник</button>
+        <button id="circleButton">Круг</button>
+        <hr>
+        <canvas id="canvas" width="800" height="500"></canvas>
+    </main>
+</body>
+<script>
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var squaresArr = [];
+    var trianglesArr = [];
+    var circlesArr = [];
+    
+    document.getElementById('squareButton').onclick = function (e) {addShape('square');}
+    document.getElementById('triangleButton').onclick = function (e) {addShape('triangle');}
+    document.getElementById('circleButton').onclick = function (e) {addShape('circle');}
+    
+    function addShape(shape){
+        var inputvalue = document.getElementById('inputField').value;
+        
+
+        switch (shape) {
+            case 'square':
+                var i = squaresArr.length;
+                var j = i+parseInt(inputvalue);
+                    do {
+                        squaresArr[i] = {
+                            x: getRandomX(),
+                            y: getRandomY(),
+                            r: getRandomRadius()*2
+                        };
+                        i++
+                    }while (i < j);
+                    console.log('kvadratiki i= ',i,' ','j= ',j,'||',squaresArr);
+                    
+                    drawShape('square');    
+            break;
+            case 'triangle':
+                var i = trianglesArr.length;
+                var j = i+parseInt(inputvalue);
+                    do {
+                        cx = getRandomX();
+                        cy = getRandomY();
+                        r = getRandomRadius();
+                        trianglesArr[i] = {
+                            //первая вершина находится на описанной окружности в 0 радиан, где R - радиус окружности (R)
+                            //вы можете решить изменить это.   
+                            x1: cx + r,
+                            y1: cy,
+                            //вторая вершина находится на описанной окружности в 2*Math.PI/3 радианах 
+                            //вы можете решить изменить это.
+                            x2: cx + r * Math.cos(2*Math.PI/3),
+                            y2: cy + r * Math.sin(2*Math.PI/3),
+                            //Рассчитайте положение третьей вершины
+                            x3: cx + r * Math.cos(4*Math.PI/3),
+                            y3: cy + r * Math.sin(4*Math.PI/3)
+                        };
+                        i++
+                    }while (i < j);
+                    console.log('treugolnechki i= ',i,' ','j= ',j,'||',trianglesArr);
+                    drawShape('triangle'); 
+
+            break;
+            case 'circle':
+                var i = circlesArr.length;
+                var j = i+parseInt(inputvalue);
+                    do {
+                        circlesArr[i] = {x: getRandomX(),y: getRandomY(),r: getRandomRadius()};
+                        i++
+                    }while (i < j);
+                    console.log('krugleshki i= ',i,' ','j= ',j,'||',circlesArr); 
+                    drawShape('circle'); 
+            break;
+        }
+    }
+
+    function drawShape(shape){
+        switch (shape) {
+            case 'square':
+                for (let i = 0; i < squaresArr.length; i++) {
+                    ctx.strokeRect(squaresArr[i].x, squaresArr[i].y, squaresArr[i].r, squaresArr[i].r); 
+                    ctx.fillStyle = "red";
+                    ctx.fillRect(squaresArr[i].x, squaresArr[i].y, squaresArr[i].r, squaresArr[i].r);
+                }
+            break;
+            case 'triangle':
+                for (let i = 0; i < trianglesArr.length; i++) {
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(trianglesArr[i].x1, trianglesArr[i].y1);
+                    ctx.lineTo(trianglesArr[i].x2, trianglesArr[i].y2);
+                    ctx.lineTo(trianglesArr[i].x3, trianglesArr[i].y3);
+                    ctx.lineTo(trianglesArr[i].x1, trianglesArr[i].y1);
+                    ctx.closePath();
+                    ctx.fillStyle = "blue";
+                    ctx.fill();
+                    ctx.stroke();   
+                }    
+            break;
+            case 'circle':
+                for (let i = 0; i < circlesArr.length; i++) {
+                    ctx.beginPath();
+                    ctx.arc(circlesArr[i].x, circlesArr[i].y, circlesArr[i].r, 0, (2*Math.PI),false);
+                    ctx.fillStyle = "green";
+                    ctx.fill();
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            break;
+        }
+    }
+
+    function getRandomRadius() {
+        var min = Math.ceil(20); //в скобках минимальное значение интервала
+        var max = Math.floor(30); //в скобках максимальное значение интервала
+        return Math.floor(Math.random() * (max - min + 1)) + min; 
+        //Максимум и минимум включаются
+    }
+
+    function getRandomX() {
+        var min = Math.ceil(10); //в скобках минимальное значение интервала
+        var max = Math.floor(790); //в скобках максимальное значение интервала
+        return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
+    }
+    function getRandomY() {
+        var min = Math.ceil(10); //в скобках минимальное значение интервала
+        var max = Math.floor(490); //в скобках максимальное значение интервала
+        return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
+    }
+</script>
+</html>

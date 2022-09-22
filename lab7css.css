@@ -1,0 +1,9 @@
+canvas{
+    background-color: lightcyan;
+    border: 1px solid lightgray;
+}
+body {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+}
