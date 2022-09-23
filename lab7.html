@@ -39,9 +39,11 @@
                         squaresArr[i] = {
                             x: getRandomX(),
                             y: getRandomY(),
-                            r: getRandomRadius()*2
+                            r: getRandomRadius()*2,
+                            z: i,
+                            hover: false
                         };
-                        i++
+                        i++;
                     }while (i < j);
                     console.log('kvadratiki i= ',i,' ','j= ',j,'||',squaresArr);
                     
@@ -65,9 +67,10 @@
                             y2: cy + r * Math.sin(2*Math.PI/3),
                             //Рассчитайте положение третьей вершины
                             x3: cx + r * Math.cos(4*Math.PI/3),
-                            y3: cy + r * Math.sin(4*Math.PI/3)
+                            y3: cy + r * Math.sin(4*Math.PI/3),
+                            z: i
                         };
-                        i++
+                        i++;
                     }while (i < j);
                     console.log('treugolnechki i= ',i,' ','j= ',j,'||',trianglesArr);
                     drawShape('triangle'); 
@@ -77,8 +80,14 @@
                 var i = circlesArr.length;
                 var j = i+parseInt(inputvalue);
                     do {
-                        circlesArr[i] = {x: getRandomX(),y: getRandomY(),r: getRandomRadius()};
-                        i++
+                        circlesArr[i] = {
+                            x: getRandomX(),
+                            y: getRandomY(),
+                            r: getRandomRadius(),
+                            z: i,
+                            hover: false
+                        };
+                        i++;
                     }while (i < j);
                     console.log('krugleshki i= ',i,' ','j= ',j,'||',circlesArr); 
                     drawShape('circle'); 
@@ -86,16 +95,20 @@
         }
     }
 
-    function drawShape(shape){
-        switch (shape) {
-            case 'square':
+    function drawShape(){
+        // switch (shape) {
+            // case 'square':
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 for (let i = 0; i < squaresArr.length; i++) {
                     ctx.strokeRect(squaresArr[i].x, squaresArr[i].y, squaresArr[i].r, squaresArr[i].r); 
-                    ctx.fillStyle = "red";
+                    if(squaresArr[i].hover){
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                    }else {ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';}
+                    
                     ctx.fillRect(squaresArr[i].x, squaresArr[i].y, squaresArr[i].r, squaresArr[i].r);
                 }
-            break;
-            case 'triangle':
+            // break;
+            // case 'triangle':
                 for (let i = 0; i < trianglesArr.length; i++) {
                     
                     ctx.beginPath();
@@ -108,23 +121,25 @@
                     ctx.fill();
                     ctx.stroke();   
                 }    
-            break;
-            case 'circle':
+            // break;
+            // case 'circle':
                 for (let i = 0; i < circlesArr.length; i++) {
                     ctx.beginPath();
                     ctx.arc(circlesArr[i].x, circlesArr[i].y, circlesArr[i].r, 0, (2*Math.PI),false);
-                    ctx.fillStyle = "green";
+                    if(circlesArr[i].hover){
+                        ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                    }else {ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';}
                     ctx.fill();
                     ctx.lineWidth = 1;
                     ctx.stroke();
                 }
-            break;
-        }
+            // break;
+        // }
     }
 
     function getRandomRadius() {
-        var min = Math.ceil(20); //в скобках минимальное значение интервала
-        var max = Math.floor(30); //в скобках максимальное значение интервала
+        var min = Math.ceil(40); //в скобках минимальное значение интервала
+        var max = Math.floor(80); //в скобках максимальное значение интервала
         return Math.floor(Math.random() * (max - min + 1)) + min; 
         //Максимум и минимум включаются
     }
@@ -139,5 +154,71 @@
         var max = Math.floor(490); //в скобках максимальное значение интервала
         return Math.floor(Math.random() * (max - min + 1)) + min; //Максимум и минимум включаются
     }
+
+    canvas.onmousemove = myMove;
+    var startX;
+    var startY;
+
+    function myMove(e) {
+        var mouseX = e.offsetX;
+        var mouseY = e.offsetY;
+        var dx = mouseX - startX;
+        var dy = mouseY - startY;
+
+        startX = mouseX;
+        startY = mouseY;
+       // function hover() {
+        squareIndex = -1;
+        triangleIndex = -1;
+        circleIndex = -1;
+
+        for (i = 0; i < squaresArr.length; i++) {
+            squaresArr[i].hover = false; 
+            if  (
+                (mouseX>squaresArr[i].x) &&
+                (mouseX<(squaresArr[i].x+squaresArr[i].r)) &&
+                (mouseY>squaresArr[i].y) &&
+                (mouseY<(squaresArr[i].y+squaresArr[i].r))
+                ) {
+                    squareIndex = squaresArr[i].z;       
+                }             
+        }
+        if(squareIndex!=-1){squaresArr[squareIndex].hover = true;}
+
+        //console.log(squareIndex);
+        
+        for (j = 0; j < trianglesArr.length; j++) {
+            if (mouseX>trianglesArr[i].x) {
+                triangleIndex = j;
+            }
+        }
+        for (k= 0; k < circlesArr.length; k++) {
+            circlesArr[k].hover = false; 
+            if  (
+                    (
+                    Math.pow((mouseX-circlesArr[k].x),2)+
+                    Math.pow((mouseY-circlesArr[k].y),2)
+                    )
+                    <=Math.pow(circlesArr[k].r,2)
+            ) {
+                circleIndex = circlesArr[k].z;
+            }
+        }
+        if(circleIndex!=-1){circlesArr[circleIndex].hover = true;}
+    //}
+        //console.log('x: ',mouseX,'~ y: ',mouseY);
+        drawShape();
+    }
+    canvas.onmousedown = myDown;
+    function myDown(e){
+        var mouseX = e.offsetX;
+        var mouseY = e.offsetY;
+                
+        //console.log('x: ',mouseX,'~ y: ',mouseY);
+        //console.log('nomer kvadrata',squareIndex);
+        console.log('nomer kruga',circleIndex);
+    }
+
+
 </script>
 </html>
