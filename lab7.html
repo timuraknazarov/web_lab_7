@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="stylesheet" href="/Users/rocke/Documents/TSU/web/web_lab_7/lab7css.css">
+    <link rel="stylesheet" href="lab7css.css">
     <title>Document</title>
 </head>
 <body>
@@ -12,8 +12,12 @@
         <button id="squareButton">Квадрат</button>
         <button id="triangleButton">Треугольник</button>
         <button id="circleButton">Круг</button>
+        <button id="clearButton">Очистить</button>
         <hr>
         <canvas id="canvas" width="800" height="500"></canvas>
+        <hr>
+        <p>При наведении на элемент, он меняет свой цвет на желтый.</p>
+        <p>При двойном нажатии на элемент, он удаляется</p>
     </main>
 </body>
 <script>
@@ -26,6 +30,12 @@
     document.getElementById('squareButton').onclick = function (e) {addShape('square');}
     document.getElementById('triangleButton').onclick = function (e) {addShape('triangle');}
     document.getElementById('circleButton').onclick = function (e) {addShape('circle');}
+    document.getElementById('clearButton').onclick = function (e) {
+        squaresArr.length = 0;
+        trianglesArr.length = 0;
+        circlesArr.length = 0;
+        drawShape();
+    }
     
     function addShape(shape){
         var inputvalue = document.getElementById('inputField').value;
@@ -39,15 +49,14 @@
                         squaresArr[i] = {
                             x: getRandomX(),
                             y: getRandomY(),
-                            r: getRandomRadius()*2,
+                            r: getRandomRadius()*2, 
                             z: i,
                             hover: false
                         };
                         i++;
                     }while (i < j);
-                    console.log('kvadratiki i= ',i,' ','j= ',j,'||',squaresArr);
-                    
-                    drawShape('square');    
+                    //console.log('kvadratiki i= ',i,' ','j= ',j,'||',squaresArr);
+                    drawShape();  
             break;
             case 'triangle':
                 var i = trianglesArr.length;
@@ -68,13 +77,13 @@
                             //Рассчитайте положение третьей вершины
                             x3: cx + r * Math.cos(4*Math.PI/3),
                             y3: cy + r * Math.sin(4*Math.PI/3),
-                            z: i
+                            z: i,
+                            hover: false
                         };
                         i++;
                     }while (i < j);
-                    console.log('treugolnechki i= ',i,' ','j= ',j,'||',trianglesArr);
-                    drawShape('triangle'); 
-
+                    //console.log('treugolnechki i= ',i,' ','j= ',j,'||',trianglesArr);
+                    drawShape();
             break;
             case 'circle':
                 var i = circlesArr.length;
@@ -89,8 +98,8 @@
                         };
                         i++;
                     }while (i < j);
-                    console.log('krugleshki i= ',i,' ','j= ',j,'||',circlesArr); 
-                    drawShape('circle'); 
+                    //console.log('krugleshki i= ',i,' ','j= ',j,'||',circlesArr);
+                    drawShape();
             break;
         }
     }
@@ -110,16 +119,20 @@
             // break;
             // case 'triangle':
                 for (let i = 0; i < trianglesArr.length; i++) {
+                    if (trianglesArr[i].r!=0){
+                        ctx.beginPath();
+                        ctx.moveTo(trianglesArr[i].x1, trianglesArr[i].y1);
+                        ctx.lineTo(trianglesArr[i].x2, trianglesArr[i].y2);
+                        ctx.lineTo(trianglesArr[i].x3, trianglesArr[i].y3);
+                        ctx.lineTo(trianglesArr[i].x1, trianglesArr[i].y1);
+                        ctx.closePath();
+                        if(trianglesArr[i].hover){
+                            ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
+                        } else {ctx.fillStyle = 'rgba(0, 0, 255, 0.5)';}
+                        ctx.fill();
+                        ctx.stroke();   
+                    }
                     
-                    ctx.beginPath();
-                    ctx.moveTo(trianglesArr[i].x1, trianglesArr[i].y1);
-                    ctx.lineTo(trianglesArr[i].x2, trianglesArr[i].y2);
-                    ctx.lineTo(trianglesArr[i].x3, trianglesArr[i].y3);
-                    ctx.lineTo(trianglesArr[i].x1, trianglesArr[i].y1);
-                    ctx.closePath();
-                    ctx.fillStyle = "blue";
-                    ctx.fill();
-                    ctx.stroke();   
                 }    
             // break;
             // case 'circle':
@@ -167,7 +180,8 @@
 
         startX = mouseX;
         startY = mouseY;
-       // function hover() {
+       
+        // function hover() {
         squareIndex = -1;
         triangleIndex = -1;
         circleIndex = -1;
@@ -184,14 +198,36 @@
                 }             
         }
         if(squareIndex!=-1){squaresArr[squareIndex].hover = true;}
-
-        //console.log(squareIndex);
         
         for (j = 0; j < trianglesArr.length; j++) {
-            if (mouseX>trianglesArr[i].x) {
-                triangleIndex = j;
+                trianglesArr[j].hover = false;
+                // Реализация - считаются произведения (1, 2, 3 - вершины треугольника, 0 - точка):
+                // (x1 - x0) * (y2 - y1) - (x2 - x1) * (y1 - y0)
+                // (x2 - x0) * (y3 - y2) - (x3 - x2) * (y2 - y0)
+                // (x3 - x0) * (y1 - y3) - (x1 - x3) * (y3 - y0)
+                //Если они одинакового знака, то точка внутри треугольника, если что-то из этого - ноль, то точка лежит на стороне, иначе точка вне треугольника.    
+                a = (trianglesArr[j].x1-mouseX)*
+                    (trianglesArr[j].y2-trianglesArr[j].y1)-
+                    (trianglesArr[j].x2-trianglesArr[j].x1)*
+                    (trianglesArr[j].y1-mouseY);
+
+                b=  (trianglesArr[j].x2-mouseX)*
+                    (trianglesArr[j].y3-trianglesArr[j].y2)-
+                    (trianglesArr[j].x3-trianglesArr[j].x2)*
+                    (trianglesArr[j].y2-mouseY);
+
+                c = (trianglesArr[j].x3-mouseX)*
+                    (trianglesArr[j].y1-trianglesArr[j].y3)-
+                    (trianglesArr[j].x1-trianglesArr[j].x3)*
+                    (trianglesArr[j].y3-mouseY)
+            if (
+                (a >= 0 && b >= 0 && c >= 0)||
+                (a <= 0 && b <= 0 && c <= 0)
+                ){
+                triangleIndex = trianglesArr[j].z;
             }
         }
+        if(triangleIndex!=-1){trianglesArr[triangleIndex].hover = true;}
         for (k= 0; k < circlesArr.length; k++) {
             circlesArr[k].hover = false; 
             if  (
@@ -205,20 +241,78 @@
             }
         }
         if(circleIndex!=-1){circlesArr[circleIndex].hover = true;}
+
+        if ((squareIndex!=-1&&circleIndex!=-1)&&(squaresArr[squareIndex].hover && circlesArr[circleIndex].hover)) {
+            if (squareIndex>circleIndex) {circlesArr[circleIndex].hover = false;}
+            else {squaresArr[squareIndex].hover = false;}
+        }
+
+        if ((triangleIndex!=-1&&circleIndex!=-1)&&(trianglesArr[triangleIndex].hover && circlesArr[circleIndex].hover)) {
+            if (triangleIndex>circleIndex) {circlesArr[circleIndex].hover = false;}
+            else {trianglesArr[triangleIndex].hover = false;}
+        }
+
+        if ((squareIndex!=-1&&triangleIndex!=-1)&&(trianglesArr[triangleIndex].hover && squaresArr[squareIndex].hover)) {
+            if (triangleIndex>circleIndex) {squaresArr[squareIndex].hover = false;}
+            else {trianglesArr[triangleIndex].hover = false;}
+        }
     //}
         //console.log('x: ',mouseX,'~ y: ',mouseY);
         drawShape();
     }
-    canvas.onmousedown = myDown;
-    function myDown(e){
-        var mouseX = e.offsetX;
-        var mouseY = e.offsetY;
-                
-        //console.log('x: ',mouseX,'~ y: ',mouseY);
-        //console.log('nomer kvadrata',squareIndex);
-        console.log('nomer kruga',circleIndex);
+    canvas.ondblclick = myDoubleClick;
+
+    function myDoubleClick(e){
+        if (getHovered){
+            hovered=getHovered();
+
+        switch (hovered[1]) {
+            case 'square':
+                squaresArr[hovered[0]].r=0;
+                drawShape();
+            break;
+            case 'triangle':
+                trianglesArr[hovered[0]].r=0;
+                drawShape();
+            break;
+            case 'circle':
+                circlesArr[hovered[0]].r=0;
+                drawShape();
+            break;
+        }
     }
-
-
+    }
+    function getHovered(){      
+        for (var i=0;i<squaresArr.length;i++) {
+            if (squaresArr[i].hover) {
+                var hovered = new Array (i,'square');
+                return hovered;
+            }
+        }  
+            
+        for (var i=0;i<trianglesArr.length;i++) {
+            if (trianglesArr[i].hover) {
+                var hovered = new Array (i,'triangle');
+                return hovered;
+            }
+        } 
+     
+        for (var i=0;i<circlesArr.length;i++) {
+            if (circlesArr[i].hover) {
+                var hovered = new Array (i,'circle');
+                return hovered;
+            }
+        }
+        return false;
+    }
+    // canvas.onmousedown = myDown;
+    // function myDown(e){
+    //     var mouseX = e.offsetX;
+    //     var mouseY = e.offsetY;           
+    //     console.log('x: ',mouseX,'~ y: ',mouseY);
+    //     console.log('nomer kvadrata',squareIndex,'hover: ',squaresArr[squareIndex].hover);
+    //     console.log('nomer kruga',circleIndex,'hover: ',circlesArr[circleIndex].hover);
+    //     console.log('nomer treugolnika',triangleIndex,'hover: ',trianglesArr[triangleIndex].hover);
+    // }
 </script>
 </html>
